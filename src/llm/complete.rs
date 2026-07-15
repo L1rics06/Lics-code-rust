@@ -1,6 +1,4 @@
-use async_openai::types::chat::{ChatCompletionRequestSystemMessageArgs, ChatCompletionRequestUserMessageArgs, CreateChatCompletionRequest, CreateChatCompletionRequestArgs};
-use serde::__private228::de::TagContentOtherField;
-use tokio::net::windows::named_pipe::PipeMode::Message;
+use async_openai::types::chat::{ChatCompletionRequestSystemMessageArgs, ChatCompletionRequestUserMessageArgs, CreateChatCompletionRequestArgs};
 
 pub async fn chat_complete(model:&str,
                            system:Option<&str>,

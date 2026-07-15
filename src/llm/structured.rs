@@ -1,6 +1,4 @@
- use async_openai::types::chat::{ChatCompletionRequestSystemMessageArgs, ChatCompletionRequestUserMessageArgs, CreateChatCompletionRequest, CreateChatCompletionRequestArgs, ResponseFormat, ResponseFormatJsonSchema};
-use serde::__private228::de::TagContentOtherField;
-use tokio::net::windows::named_pipe::PipeMode::Message;
+ use async_openai::types::chat::{ChatCompletionRequestSystemMessageArgs, ChatCompletionRequestUserMessageArgs, CreateChatCompletionRequestArgs, ResponseFormat, ResponseFormatJsonSchema};
  use crate::models::action_plan::ActionPlan;
 
  pub async fn chat_complete_structured(model:&str,

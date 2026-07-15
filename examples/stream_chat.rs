@@ -1,11 +1,9 @@
 
-use anyhow::Ok;
+use futures::StreamExt;
 use tracing::Level;
 use tracing_subscriber::FmtSubscriber;
 use LicRustCode::constant::DEEP_SEEK_V4_FLASH;
-use LicRustCode::llm::complete::chat_complete;
 use LicRustCode::llm::stream::chat_stream;
-use LicRustCode::llm::structured::chat_complete_structured;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -20,12 +18,27 @@ async fn main() -> anyhow::Result<()> {
         .finish();
     tracing::subscriber::set_global_default(subscriber)?;
 
-    let plan = chat_stream(DEEP_SEEK_V4_FLASH
-                                        ,Some("you are an ai assistant")
-                                        ,"介绍一下rss").await?;
+    let s = chat_stream(DEEP_SEEK_V4_FLASH,
+                        Some("you are an ai assistant"),
+                        "介绍一下rss");
 
-    futrues
+    futures::pin_mut!(s);
+    let mut output = String::new();
+    while let Some(result) = s.next().await {
+        match result {
+            Ok(text) => {
+                output.push_str(&text);
+                print!("{text}");
+            }
+            Err(err) => {
+                eprintln!("Error: {err}");
+                break;
+            }
+        }
+    }
 
+    //println!("Result: {output}");
+    println!("------------------------------");
 
     Ok(())
 }

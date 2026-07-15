@@ -1,7 +1,5 @@
-use async_openai::types::chat::{ChatCompletionRequestSystemMessageArgs, ChatCompletionRequestUserMessageArgs, CreateChatCompletionRequest, CreateChatCompletionRequestArgs};
+use async_openai::types::chat::{ChatCompletionRequestSystemMessageArgs, ChatCompletionRequestUserMessageArgs, CreateChatCompletionRequestArgs};
 use async_stream::stream;
-use serde::__private228::de::TagContentOtherField;
-use tokio::net::windows::named_pipe::PipeMode::Message;
 use futures::{Stream, StreamExt};
 pub fn chat_stream(model:&str,
                            system:Option<&str>,
@@ -32,7 +30,7 @@ pub fn chat_stream(model:&str,
             .build()?;
 
 
-        let mut stream = client.chat().create_stream(request).await;
+        let mut stream = client.chat().create_stream(request).await?;
 
         while let Some(response_result) = stream.next().await {
             match response_result {
