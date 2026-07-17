@@ -1,0 +1,50 @@
+use serde::{Deserialize,Serialize};
+use schemars::JsonSchema; 
+
+
+
+#[derive(Deserialize, Debug)]
+pub struct HfResponse {
+    pub rows: Vec<HfRow>
+}
+
+#[derive(Deserialize, Debug)]
+pub struct HfRow {
+    pub row: GaiaRow
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct GaiaRow {
+    pub id: String,
+    #[serde(rename = "Question")]
+    pub question: String,
+
+    #[serde(rename = "Level")]
+    pub level: String,
+
+    #[serde(rename = "Answer")]
+    pub answer: String,
+
+    #[serde(rename = "Final answer")]
+    pub final_answer: String,
+}
+
+#[derive(Deserialize, Debug,JsonSchema,Serialize)]
+#[schemars(deny_unknown_fields)]
+pub struct GaiaOutput {
+    pub is_solvable: bool,
+    pub unsolvable_reason: String,
+    pub final_answer: String,
+}
+
+#[derive(Serialize,Debug)]
+pub struct GaiaAEvalResult{
+    pub task_id: String,
+    pub model:String,
+    pub correct: bool,
+    pub is_solvable: Option<bool>,
+    pub prediction: Option<String>,
+    pub answer: String,
+    pub unsolvable_reson:Option<String>,
+    pub error: Option<String> 
+}
