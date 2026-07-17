@@ -1,7 +1,9 @@
+use std::{f32::consts::E, result};
+use backon::{ExponentialBuilder, Retryable};
+
 use async_openai::types::chat::{ChatCompletionRequestSystemMessageArgs, ChatCompletionRequestUserMessageArgs, CreateChatCompletionRequestArgs};
-use async_stream::stream;
-use futures::{Stream, StreamExt};
-pub fn chat_stream(model:&str,
+use async_stream::stream;use futures::{Stream, StreamExt};
+fn chat_stream(model:&str,
                            system:Option<&str>,
                            prompt:&str) -> impl Stream<Item = anyhow::Result<String>> {
     stream! {
@@ -45,4 +47,29 @@ pub fn chat_stream(model:&str,
         }
     }
 
+}
+
+pub async fn chat_stream_with_retry(model:&str,
+                           system:Option<&str>,
+                           prompt:&str,) -> anyhow::Result<String> {
+        let op = || async {
+            let s = chat_stream(model, system, prompt);
+            futures::pin_mut!(s);
+            let mut output = String::new();
+            while let Some(result) = s.next().await {
+                match result {
+                    Ok(text) => {
+                        output.push_str(&text);
+                        print!("{}", text);
+                    }
+                    Err(err) => {
+                        tracing::error!("Error in chat stream: {:?}", err);
+                        return Err(err);
+                    }
+                }
+            }
+            Ok(output)
+    };
+ 
+    op.retry(ExponentialBuilder::default().with_max_times(3)).await
 }
