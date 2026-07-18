@@ -1,9 +1,9 @@
-use LicRustCode::llm::semaphore::get_semaphore;
+use lic_rust_code::llm::semaphore::get_semaphore;
 use tokio::task::JoinSet;
 use tracing::{Instrument, Level};
 use tracing_subscriber::FmtSubscriber;
-use LicRustCode::constant::{DEEP_SEEK_V4_FLASH, SYSTEM_PROMPT};
-use LicRustCode::llm::stream::chat_stream_with_retry;
+use lic_rust_code::constant::{DEEP_SEEK_V4_FLASH, SYSTEM_PROMPT};
+use lic_rust_code::llm::stream::chat_stream_with_retry;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {

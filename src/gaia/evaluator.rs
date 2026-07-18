@@ -1,3 +1,5 @@
+use serde::Deserialize;
+
 use crate::gaia::{
     models::{GaiaEvalResult, GaiaRow},
     solver::solve_problem_with_retry,
@@ -44,4 +46,11 @@ pub async fn evaluate_gaia_single(problem: GaiaRow, model: &str) -> GaiaEvalResu
             error: Some(err.to_string()),
         },
     }
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CalculatorArgs {
+    pub operator: String,
+    pub first_number: f64,
+    pub second_number: f64,
 }
