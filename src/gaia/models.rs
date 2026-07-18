@@ -15,15 +15,13 @@ pub struct HfRow {
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct GaiaRow {
+    #[serde(rename = "task_id")]
     pub id: String,
     #[serde(rename = "Question")]
     pub question: String,
 
     #[serde(rename = "Level")]
     pub level: String,
-
-    #[serde(rename = "Answer")]
-    pub answer: String,
 
     #[serde(rename = "Final answer")]
     pub final_answer: String,
@@ -38,13 +36,13 @@ pub struct GaiaOutput {
 }
 
 #[derive(Serialize,Debug)]
-pub struct GaiaAEvalResult{
+pub struct GaiaEvalResult{
     pub task_id: String,
     pub model:String,
     pub correct: bool,
     pub is_solvable: Option<bool>,
     pub prediction: Option<String>,
     pub answer: String,
-    pub unsolvable_reson:Option<String>,
+    pub unsolvable_reason:Option<String>,
     pub error: Option<String> 
 }

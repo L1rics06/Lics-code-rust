@@ -1,4 +1,4 @@
-use std::{f32::consts::E, result};
+
 use backon::{ExponentialBuilder, Retryable};
 
 use async_openai::types::chat::{ChatCompletionRequestSystemMessageArgs, ChatCompletionRequestUserMessageArgs, CreateChatCompletionRequestArgs};
