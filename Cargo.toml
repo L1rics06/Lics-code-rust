@@ -15,14 +15,6 @@ path = "examples/structured_chat.rs"
 name = "tool_call_complete"
 path = "examples/tool_call_complete.rs"
 
-[[example]]
-name = "rand"
-path = "examples/cookbook/rand.rs"
-
-[[example]]
-name = "sortvec"
-path = "examples/cookbook/sortvec.rs"
-
 [dependencies]
 anyhow = "1.0.102"
 async-openai = { version = "0.41.0" ,features = ["chat-completion"] }
