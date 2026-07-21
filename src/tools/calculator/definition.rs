@@ -1,6 +1,12 @@
+//! OpenAI function definition for the calculator tool.
+//!
+//! Describes the JSON Schema of the `calculator` function so the LLM knows
+//! when and how to invoke it (operator enum + two number arguments).
+
 use async_openai::types::chat::{ChatCompletionTool, ChatCompletionTools, FunctionObjectArgs};
 use serde_json::json;
 
+/// Build the OpenAI function definition for the calculator.
 pub fn calculator_tool_definition() -> ChatCompletionTools {
     ChatCompletionTools::Function(ChatCompletionTool {
         function: FunctionObjectArgs::default()

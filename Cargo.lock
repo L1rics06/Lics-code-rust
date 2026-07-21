@@ -891,6 +891,7 @@ dependencies = [
  "dotenv",
  "features",
  "futures",
+ "rand 0.10.2",
  "reqwest",
  "schemars",
  "serde",

@@ -1,3 +1,16 @@
+//! Binary: GAIA Level 1 benchmark evaluation.
+//!
+//! Run with:
+//! ```bash
+//! cargo run --bin gaia
+//! ```
+//!
+//! Requires either:
+//! - `HF_TOKEN` env var (for HuggingFace API access), **or**
+//! - a local file at `data/gaia_level1.json` (to bypass API gating).
+//!
+//! Also needs `OPENAI_BASE_URL` and `OPENAI_API_KEY` for the LLM solver.
+
 use std::collections::HashMap;
 
 use lic_rust_code::{
@@ -20,8 +33,12 @@ async fn main() -> anyhow::Result<()> {
     gaia_level1_experiment().await
 }
 
+/// Models to benchmark against GAIA Level 1.
 const MODELS: &[&str] = &["deepseek-ai/DeepSeek-V4-Pro"];
 
+/// Evaluate all GAIA Level 1 problems against every configured model.
+///
+/// Results are grouped by model and printed as accuracy percentages.
 pub async fn gaia_level1_experiment() -> anyhow::Result<()> {
     let problems = load_gaia_level1().await?;
     let mut set = JoinSet::new();

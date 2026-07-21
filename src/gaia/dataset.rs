@@ -1,10 +1,22 @@
+//! GAIA dataset loader.
+//!
+//! Tries a local file first so users can work offline or bypass HuggingFace gating.
+//! Falls back to the HuggingFace Datasets Server API when the local file is absent.
+
 use std::path::Path;
 
 use crate::gaia::models::{GaiaRow, HfResponse};
 
+/// Local cache path for the GAIA Level 1 validation split.
 const LOCAL_DATA_PATH: &str = "data/gaia_level1.json";
+/// HuggingFace Datasets Server endpoint.
 const HF_API_URL: &str = "https://datasets-server.huggingface.co/rows";
 
+/// Load GAIA Level 1 validation problems.
+///
+/// # Errors
+///
+/// Returns an error if the local file is missing **and** `HF_TOKEN` is not set.
 pub async fn load_gaia_level1() -> anyhow::Result<Vec<GaiaRow>> {
     // 1. Try local file first so users can bypass gated HF access.
     let local = Path::new(LOCAL_DATA_PATH);

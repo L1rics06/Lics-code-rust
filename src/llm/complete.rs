@@ -6,6 +6,16 @@ use async_openai::types::chat::{
 
 use crate::{gaia::evaluator::CalculatorArgs, tools::calculator::execute::calculate};
 
+/// Blocking chat completion with optional tool calling.
+///
+/// Flow:
+/// 1. Build the request (system + user messages + optional tools).
+/// 2. Send to the LLM and wait for the response.
+/// 3. If the model asks for a tool call (e.g. `calculator`), execute it locally,
+///    append the result as a `tool` message, and send a follow-up request.
+/// 4. Return the final text content.
+///
+/// `tools` is typically obtained from [`crate::tools::tools()`].
 pub async fn chat_complete(
     model: &str,
     system: Option<&str>,

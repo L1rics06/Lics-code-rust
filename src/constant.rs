@@ -1,5 +1,14 @@
-pub const DEEP_SEEK_V4_FLASH:&'static str = "deepseek-ai/DeepSeek-V4-Flash";
+//! Global constants for the agent.
+//!
+//! `DEEP_SEEK_V4_FLASH` is the default model identifier used across examples and binaries.
+//! `SYSTEM_PROMPT` steers the model toward producing structured [`ActionPlan`] output.
 
+/// Default model identifier (SiliconFlow / DeepSeek-V4-Flash).
+pub const DEEP_SEEK_V4_FLASH: &'static str = "deepseek-ai/DeepSeek-V4-Flash";
+
+/// System prompt that instructs the model to act as a planning agent.
+///
+/// Emphasises safety boundaries and the required JSON output format.
 pub const SYSTEM_PROMPT: &str = r#"
 You are LicRustCode Agent, a specialized Rust-based coding assistant. Your primary objective is to help users by analyzing their requests and generating structured, step-by-step action plans to accomplish software development tasks.
 

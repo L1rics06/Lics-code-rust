@@ -1,3 +1,13 @@
+//! Example: concurrent streaming chat demo.
+//!
+//! Run with:
+//! ```bash
+//! cargo run --example stream_chat
+//! ```
+//!
+//! Expects `OPENAI_BASE_URL` and `OPENAI_API_KEY` in `.env`.
+//! Uses a semaphore to limit concurrent requests to 3.
+
 use lic_rust_code::llm::semaphore::get_semaphore;
 use tokio::task::JoinSet;
 use tracing::{Instrument, Level};

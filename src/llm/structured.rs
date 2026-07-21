@@ -1,7 +1,17 @@
- use async_openai::types::chat::{ChatCompletionRequestSystemMessageArgs, ChatCompletionRequestUserMessageArgs, CreateChatCompletionRequestArgs, ResponseFormat, ResponseFormatJsonSchema};
- use crate::models::action_plan::ActionPlan;
+//! Structured LLM output via JSON Schema.
+//!
+//! Forces the model to emit valid JSON matching the [`ActionPlan`] schema,
+//! then deserializes it directly into a typed Rust struct.
 
- pub async fn chat_complete_structured(model:&str,
+use async_openai::types::chat::{ChatCompletionRequestSystemMessageArgs, ChatCompletionRequestUserMessageArgs, CreateChatCompletionRequestArgs, ResponseFormat, ResponseFormatJsonSchema};
+use crate::models::action_plan::ActionPlan;
+
+/// Request an [`ActionPlan`] from the LLM.
+///
+/// The JSON Schema is generated at runtime by `schemars::schema_for!`
+/// and sent to the provider via `response_format`. The provider guarantees
+/// (best-effort) that the response is syntactically valid JSON matching that schema.
+pub async fn chat_complete_structured(model:&str,
                                        system:Option<&str>,
                                        prompt:&str) -> anyhow::Result<ActionPlan> {
     let client =  async_openai::Client::new();

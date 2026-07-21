@@ -1,8 +1,19 @@
 
+//! Streaming chat with automatic retry.
+//!
+//! `chat_stream` yields each chunk as it arrives from the LLM.
+//! `chat_stream_with_retry` buffers the chunks into a single `String`,
+//! retrying up to 3 times with exponential back-off on transient failures.
+
 use backon::{ExponentialBuilder, Retryable};
 
 use async_openai::types::chat::{ChatCompletionRequestSystemMessageArgs, ChatCompletionRequestUserMessageArgs, CreateChatCompletionRequestArgs};
 use async_stream::stream;use futures::{Stream, StreamExt};
+
+/// Returns a stream of LLM response chunks.
+///
+/// The caller must drive the stream to completion. For a convenient
+/// buffered+retry wrapper, see [`chat_stream_with_retry`].
 fn chat_stream(model:&str,
                            system:Option<&str>,
                            prompt:&str) -> impl Stream<Item = anyhow::Result<String>> {
@@ -49,6 +60,10 @@ fn chat_stream(model:&str,
 
 }
 
+/// Buffered streaming chat with retry.
+///
+/// Collects all chunks into a single `String` and retries on failure.
+/// Prints chunks to stdout as they arrive (useful for demos).
 pub async fn chat_stream_with_retry(model:&str,
                            system:Option<&str>,
                            prompt:&str,) -> anyhow::Result<String> {

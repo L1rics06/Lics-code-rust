@@ -1,3 +1,9 @@
+//! LLM solver for a single GAIA problem.
+//!
+//! Sends the question with a JSON Schema forcing the model to emit
+//! `is_solvable`, `unsolvable_reason`, and `final_answer` fields.
+//! Retries up to 3 times on transient failures.
+
 use async_openai::types::chat::{
     ChatCompletionRequestSystemMessageArgs, ChatCompletionRequestUserMessageArgs,
     CreateChatCompletionRequestArgs, FinishReason, ResponseFormat, ResponseFormatJsonSchema,
@@ -6,6 +12,7 @@ use backon::{ExponentialBuilder, Retryable};
 
 use crate::gaia::models::GaiaOutput;
 
+/// Solve one GAIA problem with exponential back-off retry.
 pub async fn solve_problem_with_retry(
     model: &str,
     system: &str,

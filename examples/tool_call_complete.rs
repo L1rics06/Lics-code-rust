@@ -1,3 +1,13 @@
+//! Example: function calling (tool use) demo.
+//!
+//! Run with:
+//! ```bash
+//! cargo run --example tool_call_complete
+//! ```
+//!
+//! Expects `OPENAI_BASE_URL` and `OPENAI_API_KEY` in `.env`.
+//! Registers a calculator tool so the model can perform arithmetic.
+
 use anyhow::Ok;
 use lic_rust_code::{constant::DEEP_SEEK_V4_FLASH, llm::complete::chat_complete, tools::tools};
 use tracing::Level;

@@ -8,8 +8,20 @@ name = "stream_chat"
 path = "examples/stream_chat.rs"
 
 [[example]]
+name = "structured_chat"
+path = "examples/structured_chat.rs"
+
+[[example]]
 name = "tool_call_complete"
 path = "examples/tool_call_complete.rs"
+
+[[example]]
+name = "rand"
+path = "examples/cookbook/rand.rs"
+
+[[example]]
+name = "sortvec"
+path = "examples/cookbook/sortvec.rs"
 
 [dependencies]
 anyhow = "1.0.102"
@@ -26,4 +38,5 @@ tracing-subscriber = "0.3.23"
 futures = "0.3.32"
 backon = "1.6.0"
 reqwest = { version = "0.13.4", features = ["json"] }
+rand = "0.10.2"
 
