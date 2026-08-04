@@ -4,7 +4,10 @@ use async_openai::types::chat::{
     ChatCompletionRequestUserMessageArgs, ChatCompletionTools, CreateChatCompletionRequestArgs,
 };
 
-use crate::{gaia::evaluator::CalculatorArgs, tools::calculator::execute::calculate};
+use crate::{
+    gaia::evaluator::CalculatorArgs,
+    tools::{calculator::execute::calculate, web_search::excute::search_web},
+};
 
 /// Blocking chat completion with optional tool calling.
 ///
@@ -86,6 +89,26 @@ pub async fn chat_complete(
                             Err(err) => err,
                         };
                         tracing::info!("result:{tool_result}");
+
+                        messages.push(
+                            ChatCompletionRequestToolMessageArgs::default()
+                                .tool_call_id(function_call.id.clone())
+                                .content(tool_result)
+                                .build()?
+                                .into(),
+                        );
+                    } else if function_name == "web_search" {
+                        let args = serde_json::from_str(&arguments)?;
+                        let result = search_web(args).await;
+                        let tool_result = match result {
+                            Ok(results) => serde_json::to_string(&results)?,
+                            Err(err) => {
+                                err.to_string();
+                                panic!("Failed to execute web search: {}", err);
+                            }
+                        };
+
+                        tracing::info!("web search result:{tool_result}");
 
                         messages.push(
                             ChatCompletionRequestToolMessageArgs::default()

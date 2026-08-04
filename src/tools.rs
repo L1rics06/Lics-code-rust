@@ -6,13 +6,17 @@
 
 use async_openai::types::chat::ChatCompletionTools;
 
-use crate::tools::calculator::definition::calculator_tool_definition;
+use crate::tools::{
+    calculator::definition::calculator_tool_definition,
+    web_search::definition::web_search_tool_definition,
+};
 
 pub mod calculator;
+pub mod web_search;
 
 /// Returns the list of tools available to the LLM.
 ///
 /// Currently only contains the calculator, but additional tools can be added here.
 pub fn tools() -> Vec<ChatCompletionTools> {
-    vec![calculator_tool_definition()]
+    vec![calculator_tool_definition(), web_search_tool_definition()]
 }

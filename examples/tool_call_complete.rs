@@ -24,26 +24,18 @@ async fn main() -> anyhow::Result<()> {
 
     let tools = tools();
 
-    let plan = chat_complete(
+    let result = chat_complete(
         DEEP_SEEK_V4_FLASH,
         Some("你是一个全能的助手"),
-        "尼泊尔的首都是哪里？",
+        "今日重庆天气如何？",
         tools.clone(),
     )
     .await?;
 
-    tracing::info!("Response: {plan:#?}");
+    tracing::info!("Response: {result:#?}");
     println!("-----------------------------------------------");
 
-    let plan = chat_complete(
-        DEEP_SEEK_V4_FLASH,
-        Some("你是一个全能的助手"),
-        "5876乘以675是多少？",
-        tools.clone(),
-    )
-    .await?;
 
-    tracing::info!("Response: {plan:#?}");
 
     Ok(())
 }
