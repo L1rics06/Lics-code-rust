@@ -3,6 +3,7 @@
 //! Compares LLM predictions against ground-truth answers and records
 //! correctness, solvability flags, and any errors.
 
+use schemars::JsonSchema;
 use serde::Deserialize;
 
 use crate::gaia::{
@@ -65,7 +66,7 @@ pub async fn evaluate_gaia_single(problem: GaiaRow, model: &str) -> GaiaEvalResu
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, JsonSchema)]
 pub struct CalculatorArgs {
     pub operator: String,
     pub first_number: f64,

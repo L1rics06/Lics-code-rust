@@ -13,6 +13,7 @@ use crate::tools::{
 
 pub mod calculator;
 pub mod web_search;
+pub mod tool;
 
 /// Returns the list of tools available to the LLM.
 ///
