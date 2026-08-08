@@ -9,7 +9,11 @@
 //! Registers a calculator tool so the model can perform arithmetic.
 
 use anyhow::Ok;
-use lic_rust_code::{constant::DEEP_SEEK_V4_FLASH, llm::complete::chat_complete, tools::tools};
+use lic_rust_code::{
+    constant::DEEP_SEEK_V4_FLASH,
+    llm::complete::chat_complete,
+    tools::{ToolBox, build_toolbox},
+};
 use tracing::Level;
 use tracing_subscriber::FmtSubscriber;
 
@@ -22,20 +26,23 @@ async fn main() -> anyhow::Result<()> {
         .finish();
     tracing::subscriber::set_global_default(subscriber)?;
 
-    let tools = tools();
+    let toolbox = tools();
 
     let result = chat_complete(
         DEEP_SEEK_V4_FLASH,
         Some("你是一个全能的助手"),
         "今日重庆天气如何？",
-        tools.clone(),
+        &toolbox,
     )
     .await?;
 
     tracing::info!("Response: {result:#?}");
     println!("-----------------------------------------------");
 
-
-
     Ok(())
+}
+
+fn tools() -> ToolBox {
+    // Build and return the default toolbox (e.g., calculator tool)
+    build_toolbox()
 }

@@ -4,26 +4,13 @@ use async_openai::types::chat::{
     ChatCompletionRequestUserMessageArgs, ChatCompletionTools, CreateChatCompletionRequestArgs,
 };
 
-use crate::{
-    gaia::evaluator::CalculatorArgs,
-    tools::{calculator::execute::calculate, web_search::excute::search_web},
-};
+use crate::tools::ToolBox;
 
-/// Blocking chat completion with optional tool calling.
-///
-/// Flow:
-/// 1. Build the request (system + user messages + optional tools).
-/// 2. Send to the LLM and wait for the response.
-/// 3. If the model asks for a tool call (e.g. `calculator`), execute it locally,
-///    append the result as a `tool` message, and send a follow-up request.
-/// 4. Return the final text content.
-///
-/// `tools` is typically obtained from [`crate::tools::tools()`].
 pub async fn chat_complete(
     model: &str,
     system: Option<&str>,
     prompt: &str,
-    tools: Vec<ChatCompletionTools>,
+    tool_box: &ToolBox,
 ) -> anyhow::Result<String> {
     let client = async_openai::Client::new();
     let mut messages = vec![];
@@ -44,111 +31,85 @@ pub async fn chat_complete(
             .into(),
     );
 
-    let request = CreateChatCompletionRequestArgs::default()
-        .model(model)
-        .messages(messages.clone())
-        .tools(tools.clone())
-        .max_tokens(2048u32)
-        .build()?;
-
-    let response = client.chat().create(request).await?;
-
-    let message = response
-        .choices
-        .into_iter()
-        .next()
-        .ok_or_else(|| anyhow::anyhow!("No choices in response"))?
-        .message;
-
-    if let Some(tool_calls) = message.tool_calls {
-        messages.push(
-            ChatCompletionRequestAssistantMessageArgs::default()
-                .tool_calls(tool_calls.clone())
-                .build()
-                .unwrap()
-                .into(),
-        );
-
-        for tool_call in tool_calls {
-            match tool_call {
-                ChatCompletionMessageToolCalls::Function(function_call) => {
-                    let function_name = function_call.function.name;
-                    let arguments = function_call.function.arguments;
-
-                    tracing::info!("Function_Call:");
-                    tracing::info!("Function:{:#}", function_name);
-                    tracing::info!("Arguments:{:#}", arguments);
-
-                    if function_name == "calculator" {
-                        let args: CalculatorArgs = serde_json::from_str(&arguments)?;
-                        let result =
-                            calculate(&args.operator, args.first_number, args.second_number);
-
-                        let tool_result = match result {
-                            Ok(calc_result) => calc_result.to_string(),
-                            Err(err) => err,
-                        };
-                        tracing::info!("result:{tool_result}");
-
-                        messages.push(
-                            ChatCompletionRequestToolMessageArgs::default()
-                                .tool_call_id(function_call.id.clone())
-                                .content(tool_result)
-                                .build()?
-                                .into(),
-                        );
-                    } else if function_name == "web_search" {
-                        let args = serde_json::from_str(&arguments)?;
-                        let result = search_web(args).await;
-                        let tool_result = match result {
-                            Ok(results) => serde_json::to_string(&results)?,
-                            Err(err) => {
-                                err.to_string();
-                                panic!("Failed to execute web search: {}", err);
-                            }
-                        };
-
-                        tracing::info!("web search result:{tool_result}");
-
-                        messages.push(
-                            ChatCompletionRequestToolMessageArgs::default()
-                                .tool_call_id(function_call.id.clone())
-                                .content(tool_result)
-                                .build()?
-                                .into(),
-                        );
-                    }
-                }
-
-                _ => {
-                    tracing::error!("Unsupported tool call type");
-                }
+    let tool_definitions: Vec<ChatCompletionTools> = tool_box
+        .values()
+        .filter_map(|tool| match tool.definition() {
+            Ok(def) => Some(def),
+            Err(e) => {
+                tracing::warn!("Failed to get tool definition for {}: {}", tool.name(), e);
+                None
             }
-        }
+        })
+        .collect();
+
+    loop {
         let request = CreateChatCompletionRequestArgs::default()
             .model(model)
             .messages(messages.clone())
-            .tools(tools.clone())
+            .tools(tool_definitions.clone())
             .max_tokens(2048u32)
             .build()?;
 
         let response = client.chat().create(request).await?;
 
-        let content = response
+        tracing::info!("response:{:#?}", response);
+
+        let message = response
             .choices
             .into_iter()
             .next()
-            .ok_or_else(|| anyhow::anyhow!("No choices in second response"))?
-            .message
-            .content
-            .ok_or_else(|| anyhow::anyhow!("No content in second response"))?;
+            .ok_or_else(|| anyhow::anyhow!("No choices in response"))?
+            .message;
 
-        return Ok(content);
+        if let Some(tool_calls) = message.tool_calls {
+            messages.push(
+                ChatCompletionRequestAssistantMessageArgs::default()
+                    .tool_calls(tool_calls.clone())
+                    .build()
+                    .unwrap()
+                    .into(),
+            );
+
+            for tool_call in tool_calls {
+                if let ChatCompletionMessageToolCalls::Function(function_call) = tool_call {
+                    let function_name = &function_call.function.name;
+                    let function_args = &function_call.function.arguments;
+
+                    tracing::info!("Function call: {}", function_name);
+
+                    let tool_result = match tool_box.get(function_name) {
+                        Some(tool) => match tool.execute(function_args).await {
+                            Ok(result) => {
+                                tracing::info!("Tool result: {result}");
+                                result
+                            }
+                            Err(err) => {
+                                let msg = format!("Tool execution error: {err}");
+                                tracing::error!("{msg}");
+                                msg
+                            }
+                        },
+                        None => {
+                            let msg = format!("Tool execution error: {function_name}");
+                            tracing::error!("{msg}");
+                            msg
+                        }
+                    };
+
+                    messages.push(
+                        ChatCompletionRequestToolMessageArgs::default()
+                            .tool_call_id(function_call.id.clone())
+                            .content(tool_result)
+                            .build()?
+                            .into(),
+                    );
+                }
+            }
+        } else {
+            let content = message
+                .content
+                .ok_or_else(|| anyhow::anyhow!("No content in final response"))?;
+            return Ok(content);
+        }
     }
-
-    let content = message
-        .content
-        .ok_or_else(|| anyhow::anyhow!("No content"))?;
-
-    Ok(content)
 }
